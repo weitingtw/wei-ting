@@ -1,0 +1,64 @@
+html
+    head
+        title= title
+    body
+        p(id = "page") Welcome to Game Lobby
+        p(id = "username") username
+    |
+    |
+    form(action='/lobby/game1_description', method='get')
+            button.btn-link(type='submit') game1
+            
+    br
+    br
+    div(id='chat_header') Public Chat
+        div(id='chat_window')
+            div(id='output' style="width: 500px; height: 300px; overflow-y: auto;")  
+        input(id='message')
+        button(id='send') send
+            
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js')
+    script.
+        document.getElementById("username").innerText = "#{username}";
+        var message = document.getElementById("message");
+        var send_button = document.getElementById("send");
+        var output = document.getElementById("output");
+        var socket = io.connect('http://localhost:3000')
+        
+        send_button.addEventListener("click", ()=>{
+            if (message.value != ""){
+                socket.emit('chat', {
+                    message: message.value
+                });
+            }
+            message.value = "";
+        });
+        
+        socket.on('chat', (data) =>{
+            output.innerHTML += '<p>' + data.name + ":" + data.message + '</p>';
+            output.scrollTop = output.scrollHeight;
+        });
+        /*document.getElementById("game1button").addEventListener('click', function(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("page").innerHTML = xhttp.responseText;
+                    //document.getElementById("demo").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("POST", "/game1_description", true);
+            xhttp.send("hello");
+
+            
+        });*/
+        
+        
+        
+        
+        
+        
+        
+    
+
+   
+        
