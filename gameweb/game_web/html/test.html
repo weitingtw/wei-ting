@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<body>
+     <canvas id = "myCanvas" width = "1800" height = "500">
+</canvas>
+    <br/>
+    Move Car
+	<input id = "cannon_slider" type="range" min="-150" max="200" />
+    <br/>
+    Adjust Tube Angle
+    <input id = "angle_slider" type="range" min="-30" max="30" />
+    <br/>
+    Shot one angle
+    <input id = "shot_one" type="range" min="-250" max="-150" />
+    <br/>
+    Shot two angle
+    <input id = "shot_two" type="range" min="-200" max="-100" />
+    <br/>
+    Shot one power
+    <input id = "speed1" type="range" min="30" max="130" />
+    <br/>
+    Shot two power
+    <input id = "speed2" type="range" min="30" max="130" />
+    <br/>
+    <button id = "shoot" type="button">shoot!</button>
+    <br/>
+    Click Reset After Each Shot;
+    <br/>
+    <button id = "reset" type="button">Reset!</button>
+    
+<script>
+    function setup(){
+        var canvas = document.getElementById("myCanvas");
+        var cannon_slider = document.getElementById("cannon_slider");
+        var angle_slider = document.getElementById("angle_slider");
+        var shot_one = document.getElementById("shot_one");
+        var shot_two = document.getElementById("shot_two");
+        var shoot = document.getElementById("shoot");
+        var reset = document.getElementById("reset");
+        var speed1 = document.getElementById("speed1");
+        var speed2 = document.getElementById("speed2");
+        
+        var angle1 = 0;
+        var angle2 = 0;
+        var m4 = twgl.m4;
+        
+        var blue1_out;
+        var blue2_out;
+        var green1_out;
+        var green2_out;
+        var angle1;
+        var angle2;
+        
+        var v1 = speed1.value;
+        var v2 = speed2.value;
+        
+        // horizontal and vertical velocity of each shot
+        var vx1;
+        var vy1;
+        var vx2;
+        var vy2;
+        var animation;
+        
+        function speed()
+        {
+            v1 = speed1.value;
+            v2 = speed2.value;
+            draw(1);
+        }
+        
+        
+        function draw(flag)
+        {
+            var context = canvas.getContext('2d');
+            var movement = cannon_slider.value;
+            var wheel_rotation = cannon_slider.value*0.01*Math.PI;
+            var theta = angle_slider.value*0.005*Math.PI;
+            var angle_one = shot_one.value*0.005*Math.PI;
+            if (angle_one < 0) angle_one= angle_one + 2*Math.PI;
+            var angle_two = shot_two.value*0.005*Math.PI;
+            if (angle_two < 0) angle_two= angle_two + 2*Math.PI;
+            
+            canvas.width = canvas.width;
+            
+            function Cannon(){
+                context.beginPath();
+                context.moveTo(0,0);
+                context.lineTo(0,25);
+                context.lineTo(25,50);
+                context.lineTo(100,50);
+                context.lineTo(125,25);
+                context.lineTo(125,0);
+                context.closePath();
+                context.fill();
+            }
+            
+            function Wheel(){
+                context.beginPath();
+                context.strokeStyle = "black";
+                context.fillStyle = "red"
+                context.arc(0,0,25,0*Math.PI,2*Math.PI);
+                context.stroke();
+                context.fill();
+                context.beginPath();
+                context.arc(0,0,15,0*Math.PI,2*Math.PI);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(0,15);
+                context.lineTo(0,25);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(0,-15);
+                context.lineTo(0,-25);
+                context.stroke();
+            }
+            
+            function Tube(){
+                context.beginPath();
+                context.fillStyle = "red";
+                context.moveTo(10,10);
+                context.lineTo(-10,-10);
+                context.lineTo(40,-60);
+                context.lineTo(60,-40);
+                context.closePath();
+                context.stroke();
+                context.fill();
+            }
+            
+            function Line(color){
+                context.beginPath();
+                context.strokeStyle = color;
+                context.setLineDash([5,7]);
+                context.moveTo(0,0);
+                context.lineTo(-10,40);
+                context.stroke();
+            }
+            
+            context.save();
+            context.translate(200,350);
+            context.save();
+            context.translate(cannon_slider.value,0)
+            Cannon();
+            context.save();
+            context.translate(0,50);
+            context.rotate(wheel_rotation);
+            Wheel();
+            context.restore();
+            context.save();
+            context.translate(125,50);
+            context.rotate(wheel_rotation);
+            Wheel();
+            context.restore();
+            context.save()
+            context.translate(125,0);
+            context.rotate(theta);
+            Tube();
+            context.save();
+            context.translate(50,-50);
+            context.save();
+            context.rotate(angle_one);
+            Line("blue");
+            
+            context.restore();
+            context.rotate(angle_two);
+            Line("green")
+            context.restore();
+            context.restore();
+            context.restore();
+            context.restore();
+            
+            // do not update angles during animation
+            if (flag)
+            {
+                // series of transformation to get original coordinates without transformation
+                var Tcannon_to_canvas = m4.multiply(m4.translation([movement, 0, 0]),
+                                                    m4.translation([200,350,0]));
+                
+                var Ttube_to_cannon = m4.multiply(m4.rotationZ(theta),
+                                                  m4.translation([125,0,0]));
+                
+                var Tblue_to_tube = m4.multiply(m4.rotationZ(angle_one),
+                                            m4.translation([50,-50,0]));
+                var Tgreen_to_tube = m4.multiply(m4.rotationZ(angle_two),
+                                                 m4.translation([50,-50,0]));
+                
+                var Tblue_to_canvas = m4.multiply(Tblue_to_tube,
+                                            m4.multiply(Ttube_to_cannon,Tcannon_to_canvas));
+                
+                var Tgreen_to_canvas = m4.multiply(Tgreen_to_tube,
+                                            m4.multiply(Ttube_to_cannon,Tcannon_to_canvas));
+                
+                // compute coordinates for calculating angle
+                blue1_out = m4.transformPoint(Tblue_to_canvas,[0, 0, 0]);
+                blue2_out = m4.transformPoint(Tblue_to_canvas,[-10, 40, 0]);
+                green1_out = m4.transformPoint(Tgreen_to_canvas,[0,0,0]);
+                green2_out = m4.transformPoint(Tgreen_to_canvas,[-10, 40, 0]);
+            
+                var Ttube_to_blue = m4.multiply(m4.translation([50,-50,0]),
+                                                m4.rotationZ(angle_one));
+                var Tcannon_to_tube = m4.multiply(m4.translation([125,0,0]),
+                                                  m4.rotationZ(theta));
+                var Tcanvas_to_cannon = m4.multiply(m4.translation([200,350,0]),
+                                                    m4.translation([movement, 0, 0]));
+            
+                var Tcanvas_to_blue = m4.multiply(Tcanvas_to_cannon,
+                                                  m4.multiply(Tcannon_to_tube, Ttube_to_blue));
+                
+                // calculate angle with two coordinates
+                angle1 = Math.atan2(blue2_out[1] - blue1_out[1], blue2_out[0] - blue1_out[0]);
+                angle2 = Math.atan2(green2_out[1] - green1_out[1], green2_out[0] - green1_out[0]);
+                
+                // make angles become positive in radians
+                if (angle1 < 0 )
+                {
+                    angle1 = angle1+2*Math.PI;
+                }   
+                if (angle2 < 0 )
+                {
+                    angle2 = angle2+2*Math.PI;
+                }
+                
+                // adjust angle to fit normal coordinates
+                angle1 = 2*Math.PI - angle1;
+                angle2 = 2*Math.PI - angle2;
+                
+                // calculate horizontal and vertical initial speed
+                vx1 = v1 * Math.cos(angle1);
+                vy1 = v1 * Math.sin(angle1);
+                vx2 = v2 * Math.cos(angle2);
+                vy2 = v2 * Math.sin(angle2);
+            }
+        }
+        
+        var fy1 = 0; // gravity over time
+        var fy2 = 0; // gravity over time
+        var t = 0; // keep track of time
+        
+        function animation()
+        {
+            var context = canvas.getContext("2d");
+            canvas.width = canvas.width;
+            t += 0.01;
+
+            draw(0);
+            
+            context.beginPath();
+            context.arc(blue1_out[0], blue1_out[1], 10, 0, 2*Math.PI);
+            context.fillStyle = "blue";
+            context.fill();
+            context.closePath();
+            
+            context.beginPath();
+            context.arc(green1_out[0], green1_out[1], 10, 0, 2*Math.PI);
+            context.fillStyle = "green";
+            context.fill();
+            context.closePath();
+            
+            // update positions with projectile motions, refer to physics formulas
+            fy1 += - 9.8 * t;
+            blue1_out[0] += vx1 * t ;
+            blue1_out[1] -= 0.5 * (vy1 + fy1) * t;
+            
+            fy2 += -9.8 * t;
+            green1_out[0] += vx2 * t ;
+            green1_out[1] -= 0.5 * (vy2 + fy1) * t;
+            
+            if (t < 100){
+                window.requestAnimationFrame(animation);
+            }
+        }
+        
+        function reload(){
+            window.location.reload();
+        }                  
+        window.cancelAnimationFrame(animation);
+            
+        angle_slider.addEventListener("input", draw);
+        cannon_slider.addEventListener("input", draw);
+        shot_one.addEventListener("input", draw);
+        shot_two.addEventListener("input", draw);
+        shoot.addEventListener("click", animation);
+        speed1.addEventListener("input", speed);
+        speed2.addEventListener("input", speed);
+        reset.addEventListener("click", reload);
+        draw(1); 
+    }
+   
+    window.onload = setup;
+    
+    
+</script>
+<script src="http://graphics.cs.wisc.edu/JS/twgl-full.min.js"></script>
+</body>
+</html>

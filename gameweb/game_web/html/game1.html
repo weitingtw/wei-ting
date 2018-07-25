@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id = "time">30 seconds remaining</div> 
+    <div id = "score">score: 0 </div>
+     <canvas id = "myCanvas" width = "1800" height = "500">
+</canvas>
+<script>
+    var canvas = document.getElementById('myCanvas');
+    var context = canvas.getContext("2d");
+    console.log(window.innerWidth, window.innerHeight);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    var timeLeft = 30;
+    var score = 0;
+    var time = document.getElementById("time");
+    var score_div = document.getElementById("score");
+    var timerId = setInterval(countdown, 1000);
+
+    function countdown() {
+        if (timeLeft == 0) {
+            clearTimeout(timerId);
+            canvas.width = canvas.width;
+            time.textContent = "Game Over";
+            score_div.textContent = "Your Final Score is " + score;
+            
+        } else {
+            time.textContent = timeLeft + ' seconds remaining';
+            timeLeft--;
+        }
+    }
+    
+    function isIntersect(point, squarex, squarey, size){
+        return point.x >= squarex && point.x <=  (squarex + size)   
+        && point.y >= squarey && point.y <=  (squarey + size);
+    }
+    
+    function spawnSquare(size){
+        //console.log(size);
+        console.log("2");
+        var xpos = Math.random()*(canvas.width-100);
+        var ypos = Math.random()*(canvas.height-100);
+        context.rect(xpos, ypos, size, size);
+        context.fillStyle = "Red";
+        context.fill();
+        addListener(xpos, ypos, size);
+    }
+    
+    function addListener(xpos, ypos, size){
+        canvas.addEventListener("click", function myClick(event){
+            var mousepoint = {x: event.offsetX, y:event.offsetY};
+            if (isIntersect(mousepoint, xpos, ypos, size)){
+                score ++;
+                score_div.textContent ="score: " + score;
+                // clear canvas
+                canvas.width = canvas.width;   
+                // remove all listeners
+                canvas.removeEventListener("click", myClick);
+                spawnSquare(size *0.95, canvas.getContext('2d'));
+                
+            }
+        })
+    }
+    
+    
+    
+    spawnSquare(100);
+    
+</script>
+</body>
+</html>

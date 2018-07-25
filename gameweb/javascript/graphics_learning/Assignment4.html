@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<body>
+     <canvas id = "myCanvas" width = "600" height = "600">     
+</canvas>
+<br>
+    <button id = "start" type="button"> start!</button>
+    <button id = "stop" type="button"> stop!</button>
+<br>
+<p>Press WASD to view around. Click "start" to be able to move to move the helicopter. After "clicking start", move around the helicopter with up,down,left and right key on your keyboard for horizontal movement(improve rotation from assignment 3), Q and E for vertical movement, C and V for field of view. You can only stop the helicopter on the surface. Notice the color of each surface of the helicopter is slightly different</p>
+<script>
+function setup(){
+    
+    var canvas = document.getElementById('myCanvas');
+    var angle_view1  = -20;
+    var angle_view2  = 100;
+    var fov_slider =  document.getElementById("fov_slider");
+    var start = document.getElementById("start");
+    var stop = document.getElementById("stop");
+    var speed = document.getElementById("slider3");
+    var context = canvas.getContext('2d');
+    var m4 = twgl.m4;
+    var dx = 0;       
+    var dy = 0;
+    var dz = 0;
+    var spin_angle = 0;
+    var flag = 0;
+    var flag2 = 0;
+    var left_angle = 0;
+    var right_angle = 0;
+    var triangles = [];
+    var THelicopter, TStick, Tarrow1, Tarrow2, Tarrow3, Tarrow4,Tlawn,Tobstacle;
+    var THelicopter_2, TStick_2, Tarrow1_2, Tarrow2_2, Tarrow3_2, Tarrow4_2, Tlawn_2,Tobstacle_2;
+    var fov = 1;
+    
+    function initGeometry(){
+        triangles.push([[0,15,25],[0,15,55],[0,-15,25],"red","body"]);
+        triangles.push([[0,-15,55],[0,15,55],[0,-15,25],"red","body"]);
+        triangles.push([[50,15,25],[0,15,25],[50,15,55],"red","body"]);
+        triangles.push([[0,15,55],[0,15,25],[50,15,55],"red","body"]);
+        triangles.push([[50,-15,25],[0,-15,25],[50,-15,55],"red","body"]);
+        triangles.push([[0,-15,55],[0,-15,25],[50,-15,55],"red","body"]);
+        triangles.push([[0,15,25],[50,15,25],[0,-15,25],"red","body"]);
+        triangles.push([[50,-15,25],[50,15,25],[0,-15,25],"red","body"]);
+        triangles.push([[0,15,55],[50,15,55],[0,-15,55],"red","body"]);
+        triangles.push([[50,-15,55],[50,15,55],[0,-15,55],"red","body"]);
+        
+        triangles.push([[50,30,0],[50,30,70],[50,-30,0],"blue","body"]);
+        triangles.push([[50,-30,70],[50,30,70],[50,-30,0],"blue","body"]);
+        triangles.push([[120,30,0],[120,30,70],[120,-30,0],"blue","body"]);
+        triangles.push([[120,-30,70],[120,30,70],[120,-30,0],"blue","body"])
+        triangles.push([[50,30,0],[120,30,0],[50,30,70],"blue","body"]);
+        triangles.push([[120,30,70],[120,30,0],[50,30,70],"blue","body"]);
+        triangles.push([[50,-30,0],[120,-30,0],[50,-30,70],"blue","body"]);
+        triangles.push([[120,-30,70],[120,-30,0],[50,-30,70],"blue","body"]);
+        triangles.push([[50,30,0],[120,30,0],[50,-30,0],"blue","body"]);
+        triangles.push([[120,-30,0],[120,30,0],[50,-30,0],"blue","body"]);
+        triangles.push([[50,30,70],[120,30,70],[50,-30,70],"blue","body"]);
+        triangles.push([[120,-30,70],[120,30,70],[50,-30,70],"blue","body"]);
+        
+        triangles.push([[5,5,30],[5,-5,30],[0,0,0],"green","stick"]);
+        triangles.push([[5,5,30],[-5,5,30],[0,0,0],"green","stick"]);
+        triangles.push([[-5,-5,30],[5,-5,30],[0,0,0],"green","stick"]);
+        triangles.push([[-5,-5,30],[-5,5,30],[0,0,0],"green","stick"]);
+        triangles.push([[5,5,30],[5,-5,30],[-5,5,30],"green","stick"]);
+        triangles.push([[-5,-5,30],[5,-5,30],[-5,5,30],"green","stick"]);
+        
+        triangles.push([[50,5,0],[5,5,0],[50,-5,0],"red","arrow1"]);
+        triangles.push([[5,-5,0],[5,5,0],[50,-5,0],"red","arrow1"]);
+        
+        triangles.push([[50,5,0],[5,5,0],[50,-5,0],"red","arrow2"]);
+        triangles.push([[5,-5,0],[5,5,0],[50,-5,0],"red","arrow2"]);
+        
+        triangles.push([[50,5,0],[5,5,0],[50,-5,0],"red","arrow3"]);
+        triangles.push([[5,-5,0],[5,5,0],[50,-5,0],"red","arrow3"]);
+        
+        triangles.push([[50,5,0],[5,5,0],[50,-5,0],"red","arrow4"]);
+        triangles.push([[5,-5,0],[5,5,0],[50,-5,0],"red","arrow4"]);  
+        
+        
+        //triangles.push([[-200,-200,0],[200,-200,0],[-200,200,0],"green","lawn"]);
+        //triangles.push([[200,200,0],[200,-200,0],[-200,200,0],"green","lawn"]); 
+        
+        triangles.push([[50,30,0],[50,30,70],[50,-30,0],"black","obstacle"]);
+        triangles.push([[50,-30,70],[50,30,70],[50,-30,0],"black","obstacle"]);
+        triangles.push([[120,30,0],[120,30,70],[120,-30,0],"black","obstacle"]);
+        triangles.push([[120,-30,70],[120,30,70],[120,-30,0],"black","obstacle"])
+        triangles.push([[50,30,0],[120,30,0],[50,30,70],"black","obstacle"]);
+        triangles.push([[120,30,70],[120,30,0],[50,30,70],"black","obstacle"]);
+        triangles.push([[50,-30,0],[120,-30,0],[50,-30,70],"black","obstacle"]);
+        triangles.push([[120,-30,70],[120,-30,0],[50,-30,70],"black","obstacle"]);
+        triangles.push([[50,30,0],[120,30,0],[50,-30,0],"black","obstacle"]);
+        triangles.push([[120,-30,0],[120,30,0],[50,-30,0],"black","obstacle"]);
+        triangles.push([[50,30,70],[120,30,70],[50,-30,70],"black","obstacle"]);
+        triangles.push([[120,-30,70],[120,30,70],[50,-30,70],"black","obstacle"]);
+    }
+    initGeometry();
+    function moveToTx(x,y,z,Tx) {
+        var loc = [x,y,z];
+        var locTx = m4.transformPoint(Tx,loc);
+        context.moveTo(locTx[0]+250,-locTx[1]+250);
+    }
+
+    function lineToTx(x,y,z,Tx) {
+        var loc = [x,y,z];
+        var locTx = m4.transformPoint(Tx,loc);
+        context.lineTo(locTx[0]+250,-locTx[1]+250);
+    }
+    
+    
+    function drawArrow(Tx) {
+      
+        moveToTx(0,0,0,Tx);
+     
+        lineToTx(50, 0, 0, Tx);
+      
+        context.stroke(); 
+
+    }
+    
+    function drawPropeller(Tx){
+        context.beginPath();
+        moveToTx(5,5,0,Tx);
+        lineToTx(50,5,0,Tx);
+        lineToTx(50,-5,0,Tx);
+        lineToTx(5,-5,0,Tx);
+        lineToTx(5,5,0,Tx);
+        context.closePath();
+        context.stroke();
+    }
+    
+    function drawSphere(Tx) {
+      
+      var xc=15,yc=15,zc=15;
+      var rx=15,ry=15,rz=15;
+      var theta=0,phi=0;
+
+      for(phi=0;phi<2.001*Math.PI;phi=phi+(1/4)*Math.PI){
+          theta=0;
+          moveToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                   yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          for(theta=(1/32)*Math.PI;theta<1.001*Math.PI;theta=theta+(1/32)*Math.PI)
+                lineToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                       yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          context.stroke();
+      }
+      for(theta=(1/8)*Math.PI;theta<0.999*Math.PI;theta=theta+(1/4)*Math.PI){
+          phi=0;
+          moveToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                   yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          for(phi=(1/64)*Math.PI;phi<2.001*Math.PI;phi=phi+(1/64)*Math.PI)
+              lineToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                       yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          context.stroke();
+      }
+    }
+    
+    function drawStick(Tx){
+        context.beginPath();
+        moveToTx(0,0,0,Tx);
+        lineToTx(5,5,30,Tx);
+        lineToTx(5,-5,30,Tx);
+        lineToTx(0,0,0,Tx);
+        
+        lineToTx(-5,-5,30,Tx);
+        lineToTx(5,-5,30,Tx);
+        lineToTx(0,0,0,Tx);
+        
+        lineToTx(5,5,30,Tx);
+        lineToTx(-5,5,30,Tx);
+        lineToTx(0,0,0,Tx);
+        
+        lineToTx(-5,-5,30,Tx);
+        lineToTx(-5,5,30,Tx);
+        lineToTx(0,0,0,Tx);
+        context.closePath();
+    }
+    
+    function drawLawn(Tx){
+        moveToTx(-200,-200,0,Tx);
+        lineToTx(-200,200,0,Tx);
+        lineToTx(200,200,0,Tx);
+        lineToTx(200,-200,0,Tx);
+        lineToTx(-200,-200,0,Tx);
+        context.stroke();
+        
+        moveToTx(-50,-200,0,Tx);lineToTx(-50,200,0,Tx);context.stroke();
+        moveToTx(-90,-200,0,Tx);lineToTx(-90,200,0,Tx);context.stroke();
+        moveToTx(-130,-200,0,Tx);lineToTx(-130,200,0,Tx);context.stroke();
+        moveToTx(-170,-200,0,Tx);lineToTx(-170,200,0,Tx);context.stroke();
+        moveToTx(0,-200,0,Tx);lineToTx(0,200,0,Tx);context.stroke();
+        moveToTx(50,-200,0,Tx);lineToTx(50,200,0,Tx);context.stroke();
+        moveToTx(90,-200,0,Tx);lineToTx(90,200,0,Tx);context.stroke();
+        moveToTx(130,-200,0,Tx);lineToTx(130,200,0,Tx);context.stroke();
+        moveToTx(170,-200,0,Tx);lineToTx(170,200,0,Tx);context.stroke();
+    }
+
+    function drawObstacle(Tx){
+        context.beginPath();
+        moveToTx(50,30,70,Tx);
+        lineToTx(50, -30,70, Tx);
+        lineToTx(50, -30, 0,Tx);
+        lineToTx(50, 30, 0,Tx);
+        lineToTx(50,30,70,Tx);
+        context.stroke();
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+        moveToTx(50, -30,70, Tx);
+        lineToTx(120,-30,70,Tx);
+        context.stroke();
+        moveToTx(50, 30, 0,Tx);
+        lineToTx(120,30,0,Tx);
+        context.stroke();
+        moveToTx(50,-30,0,Tx);
+        lineToTx(120,-30,0,Tx);
+        context.stroke();
+      
+        moveToTx(120,30,70,Tx);
+        lineToTx(120, -30,70, Tx);
+        lineToTx(120, -30, 0,Tx);
+        lineToTx(120, 30, 0,Tx);
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+      context.closePath();
+    }
+    function drawHelicopter(Tx){
+      context.beginPath();
+        moveToTx(0, 15,25, Tx);
+        lineToTx(0,-15,25, Tx);
+        lineToTx(0,-15,55, Tx);
+        lineToTx(0, 15,55, Tx);
+        lineToTx(0,15,25,Tx);
+      
+        lineToTx(50,15,25,Tx);
+
+        context.stroke();
+      
+        moveToTx(50, 15,55, Tx);
+        lineToTx(0, 15, 55, Tx);
+        context.stroke();
+      
+        moveToTx(50, -15,55, Tx);
+        lineToTx(0, -15, 55, Tx);
+        context.stroke();
+      
+        moveToTx(50, -15,25, Tx);
+        lineToTx(0, -15, 25, Tx);
+        context.stroke();
+      
+        moveToTx(50,30,70,Tx);
+        lineToTx(50, -30,70, Tx);
+        lineToTx(50, -30, 0,Tx);
+        lineToTx(50, 30, 0,Tx);
+        lineToTx(50,30,70,Tx);
+        context.stroke();
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+        moveToTx(50, -30,70, Tx);
+        lineToTx(120,-30,70,Tx);
+        context.stroke();
+        moveToTx(50, 30, 0,Tx);
+        lineToTx(120,30,0,Tx);
+        context.stroke();
+        moveToTx(50,-30,0,Tx);
+        lineToTx(120,-30,0,Tx);
+        context.stroke();
+      
+        moveToTx(120,30,70,Tx);
+        lineToTx(120, -30,70, Tx);
+        lineToTx(120, -30, 0,Tx);
+        lineToTx(120, 30, 0,Tx);
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+      context.closePath();
+      
+  }
+    function drawTriangle(triangle,Tx)
+    {
+     context.beginPath();
+     context.fillStyle=triangle[3];
+     moveToTx(triangle[0][0],triangle[0][1],triangle[0][2],Tx); 
+     lineToTx(triangle[1][0],triangle[1][1],triangle[1][2],Tx); 
+     lineToTx(triangle[2][0],triangle[2][1],triangle[2][2],Tx); 
+     context.closePath(); 
+     context.fill();
+  }
+    
+    function draw2(){
+        draw(spin_angle);
+    }
+    
+    function draw(angle_to_spin){
+       
+        canvas.width = canvas.width;
+        var angle1 = angle_view1*0.01*Math.PI;
+        var angle2 = angle_view2;
+        var total_angle = left_angle - right_angle;
+        var stack = [m4.identity()];
+        var eye = [500 * Math.cos(angle1), 500 * Math.sin(angle1), angle2];
+        var eye2 = [1000 * Math.cos(140),500 * Math.sin(140),50];
+        var target = [0,0,0];
+        var up = [0,0,1];
+        var Tcamera = m4.inverse(m4.lookAt(eye,target,up));
+        var Tcamera_2 = m4.inverse(m4.lookAt(eye2,target,up));
+        //var Tprojection = m4.ortho(-500,500,-500,500,-2,-9);
+        var Tprojection = m4.perspective(fov,1,5,600);
+        var Tviewport = m4.multiply(m4.scaling([500,500,0]),m4.translation([0,0,0]));
+        var Tall = m4.multiply(m4.multiply(Tcamera,Tprojection),Tviewport);
+        //drawLawn(Tall);
+        Tlawn = Tall;
+        Tlawn_2 = m4.multiply(Tcamera,Tprojection);
+        stack.unshift(stack[0]);
+        
+        
+        var Tmodel = m4.translation([-200,0,0]);
+        stack[0] = m4.multiply(Tmodel,stack[0]);
+        drawObstacle(m4.multiply(stack[0],Tall));
+        Tobstacle = m4.multiply(stack[0],Tall);
+        Tobstacle_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection); 
+        var Tobstacle_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        stack.shift();
+        var shift = m4.translation([dx,dy,dz]);
+        var Tmodel = m4.multiply(m4.rotationZ(0+total_angle),m4.translation([dx,dy,dz]));
+        
+        stack[0] = m4.multiply(Tmodel,stack[0]);
+    
+        drawHelicopter(m4.multiply(stack[0],Tall));
+        THelicopter = m4.multiply(stack[0],Tall);
+        THelicopter_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var THelicopter_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        var Tsphere_to_body = m4.translation([85,0,70]);
+        stack[0] = m4.multiply(Tsphere_to_body,stack[0]);
+      
+        drawStick(m4.multiply(stack[0],Tall));
+        TStick = m4.multiply(stack[0],Tall);
+        TStick_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var TStick_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        var spin = m4.rotationZ(angle_to_spin);
+        stack.unshift(stack[0]);
+        
+        var Tarrow1_to_sphere = m4.multiply(m4.rotationZ(0 + angle_to_spin),m4.translation([0,0,30]));
+
+        stack[0] = m4.multiply(Tarrow1_to_sphere,stack[0]);
+        drawPropeller(m4.multiply(stack[0],Tall));
+        Tarrow1 = m4.multiply(stack[0],Tall);
+        Tarrow1_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var Tarrow1_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow2_to_sphere = m4.multiply(m4.rotationZ(0.5*Math.PI + angle_to_spin),m4.translation([0,0,30]));
+        stack[0] = m4.multiply(Tarrow2_to_sphere,stack[0]);
+        drawPropeller(m4.multiply(stack[0],Tall));
+        Tarrow2 = m4.multiply(stack[0],Tall);
+        Tarrow2_2 =m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var Tarrow2_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow3_to_sphere = m4.multiply(m4.rotationZ(1*Math.PI+angle_to_spin),m4.translation([0,0,30]));
+        stack[0] = m4.multiply(Tarrow3_to_sphere,stack[0]);
+        drawPropeller(m4.multiply(stack[0],Tall));
+        Tarrow3 = m4.multiply(stack[0],Tall);
+        Tarrow3_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var Tarrow3_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow4_to_sphere = m4.multiply(m4.rotationZ(1.5*Math.PI + angle_to_spin),m4.translation([0,0,30]));
+        stack[0] = m4.multiply(Tarrow4_to_sphere,stack[0]);
+        drawPropeller(m4.multiply(stack[0],Tall));
+        Tarrow4 =  m4.multiply(stack[0],Tall);
+        Tarrow4_2 = m4.multiply(m4.multiply(stack[0],Tcamera),Tprojection);
+        var Tarrow4_3 = m4.multiply(stack[0],Tcamera_2);
+        
+        function compare(a,b){
+            var T1, T2;
+            if (a[4] == "body"){
+                T1 = THelicopter_2;
+            } else if (a[4] == "stick"){
+                T1 = TStick_2;
+            }else if (a[4] == "arrow1"){
+                T1 = Tarrow1_2;
+            }else if (a[4] == "arrow2"){
+                T1 = Tarrow2_2;
+            }else if (a[4] == "arrow3"){
+                T1 = Tarrow3_2;
+            }else if (a[4] == "arrow4"){
+                T1 = Tarrow4_2;
+            }else if (a[4] == "obstacle"){
+                T1 = Tobstacle_2;
+            } else {
+                T1 = m4.identity;
+            }
+            if (b[4] == "body"){
+                T2 = THelicopter_2;
+            } else if (b[4] == "stick"){
+                T2 = TStick_2;
+            }else if (b[4] == "arrow1"){
+                T2 = Tarrow1_2;
+            }else if (b[4] == "arrow2"){
+                T2 = Tarrow2_2;
+            }else if (b[4] == "arrow3"){
+                T2 = Tarrow3_2;
+            }else if (b[4] == "arrow4"){
+                T2 = Tarrow4_2;
+            } else if (b[4] == "obstacle"){
+                T2 = Tobstacle_2;
+            }else {
+                T2 = m4.identity;
+            }
+            var point1 = m4.transformPoint(T1,a[0]);
+            var point1_2 = m4.transformPoint(T1,a[1]);
+            var point1_3=m4.transformPoint(T1,a[2]);
+        
+         
+            var point2 = m4.transformPoint(T2,b[0]);
+            var point2_2 = m4.transformPoint(T2,b[1]);
+            var point2_3=m4.transformPoint(T2,b[2]);
+            if (point1[2]+point1_2[2]+point1_3[2] > point2[2]+point2_2[2]+point2_3[2]){
+                
+                return -1;
+            } else if (point1[2]+point1_2[2]+point1_3[2] < point2[2]+point2_2[2]+point2_3[2]){
+                
+                return 1;
+            }
+            return 0;
+        }
+        
+        
+        
+        triangles.sort(compare);
+        
+        for(var i=0;i<triangles.length;i++){
+            var Tmc;
+            if (triangles[i][4] == "body"){
+                Tmc = THelicopter_3;
+            } else if (triangles[i][4] == "stick"){
+                Tmc = TStick_3;
+            }else if (triangles[i][4] == "arrow1"){
+                Tmc = Tarrow1_3;
+            }else if (triangles[i][4] == "arrow2"){
+                Tmc = Tarrow2_3;
+            }else if (triangles[i][4] == "arrow3"){
+                Tmc = Tarrow3_3;
+            }else if (triangles[i][4] == "arrow4"){
+                Tmc = Tarrow4_3;
+            }else if (triangles[i][4] == "obstacle"){
+                Tmc = Tobstacle_3;
+            } else {
+                Tmc = m4.identity;
+            }
+            var cam=m4.transformPoint(Tmc,triangles[i][1]);
+            if (triangles[i][3] == "red"){
+                triangles[i][5] = 255;
+                triangles[i][6] = 0;
+                triangles[i][7] = 0;
+            } else if (triangles[i][3] == "blue"){
+                triangles[i][5] = 0;
+                triangles[i][6] = 0;
+                triangles[i][7] = 255;
+            }else if (triangles[i][3] == "green"){
+                triangles[i][5] = 0;
+                triangles[i][6] = 255;
+                triangles[i][7] = 0;
+            } else if (triangles[i][3] == "black"){
+                triangles[i][5] = 1;
+                triangles[i][6] = 1;
+                triangles[i][7] = 1;
+            }
+           
+            triangles[i][3]="rgb("+Math.floor(Math.pow(triangles[i][5],3)*(-cam[2])*0.000000015)+","+Math.floor(Math.pow(triangles[i][6],3)*(-cam[2])*0.000000015)+","+Math.floor(Math.pow(triangles[i][7],3)*(-cam[2])*0.000000015)+")";
+           
+        }
+        
+       
+        
+        
+        var T1 = m4.identity;
+        for (var i = 0; i < triangles.length;i++){
+            if (triangles[i][4] == "body"){
+                T1 = THelicopter;
+            } else if (triangles[i][4] == "stick"){
+                T1 = TStick;
+            } else if (triangles[i][4] == "arrow1"){
+                T1 = Tarrow1;
+            }else if (triangles[i][4] == "arrow2"){
+                T1 = Tarrow2;
+            }else if (triangles[i][4] == "arrow3"){
+                T1 = Tarrow3;
+            }else if (triangles[i][4] == "arrow4"){
+                T1 = Tarrow4;
+            }
+            else if (triangles[i][4] == "obstacle"){
+                T1 = Tobstacle;
+            }
+            drawTriangle(triangles[i], T1);
+            if (triangles[i][4] == "body"){
+                //drawHelicopter(THelicopter);
+            } else if (triangles[i][4] == "stick"){
+                drawStick(TStick);
+            } else if (triangles[i][4] == "arrow1"){
+                drawPropeller(Tarrow1);
+            }else if (triangles[i][4] == "arrow2"){
+                drawPropeller(Tarrow2);
+            }else if (triangles[i][4] == "arrow3"){
+                drawPropeller(Tarrow3);
+            }else if (triangles[i][4] == "arrow4"){
+                drawPropeller(Tarrow4);
+            }
+            
+        }
+        
+    }
+   
+   
+    function startanimation(){
+        
+        flag = 1;
+        if (flag2 == 0){
+            flag2 = 1;
+            animation();
+            
+        } else if (flag2 == 1){
+        }
+    }
+    function animation(){
+        
+        spin_angle += 0.2;
+        draw(spin_angle);
+        if (flag == 1){
+            window.requestAnimationFrame(animation);      
+        }
+    }
+    
+    function stop1(){
+        if (dz == 0){
+            flag = 0;
+            flag2 = 0;
+        }
+        
+    }
+    
+    
+    start.addEventListener("click", startanimation);
+    stop.addEventListener("click", stop1);
+    document.addEventListener("keydown", function(event){
+        if (event.keyCode == 38 && flag == 1){
+            
+            var total_angle = left_angle - right_angle;
+            dx += 2*Math.cos(total_angle);
+            dy += 2*Math.sin(total_angle);
+            
+        }   
+        
+        if (event.keyCode == 37 && flag == 1){
+            left_angle  += 0.05;
+        }   
+        
+        if (event.keyCode == 39 && flag == 1){
+            right_angle  += 0.05;
+        }   
+        
+        if (event.keyCode == 40 && flag == 1){
+            
+            var total_angle = left_angle - right_angle;
+            dx -= 2*Math.cos(total_angle);
+            dy -= 2*Math.sin(total_angle);
+            
+        }   
+        
+        if (event.keyCode == 81 && flag == 1){
+            dz += 2;
+        }
+        
+        if (event.keyCode == 69 && flag == 1  && dz > 0){
+            dz -= 2;
+        }
+        
+        if (event.keyCode == 65 ){
+            if (angle_view1 == 100){
+                angle_view1 = -100;
+            }
+            angle_view1 += 1;
+        }
+        
+        if (event.keyCode == 68){
+            if (angle_view1 == -100){
+                angle_view1 = 100;
+            }
+            angle_view1 -= 1;
+        }
+        
+        if (event.keyCode == 83 ){
+            angle_view2 += 10;
+        }
+        
+        if (event.keyCode == 87 ){
+            if (angle_view2 > -60){
+            angle_view2 -= 10;
+            }
+        }
+        if (event.keyCode == 86 ){
+            if (fov < 2){
+            fov += 0.03;
+            }
+        }
+        
+        if (event.keyCode == 67 ){
+            if (fov>0.3){
+            fov -= 0.03;
+            }
+        }
+        
+        draw(spin_angle);
+    })
+    draw(spin_angle);
+    
+}
+    
+window.onload = setup;
+
+    
+</script>
+    
+
+<script src="http://graphics.cs.wisc.edu/JS/twgl-full.min.js"></script>
+</body>
+</html>

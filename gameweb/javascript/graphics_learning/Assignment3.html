@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<body>
+     <canvas id = "myCanvas" width = "600" height = "600">     
+</canvas>
+<br>
+
+    <button id = "start" type="button"> start!</button>
+    <button id = "stop" type="button"> stop!</button>
+<br>
+<p>Press WASD to view around. Click "start" to be able to move to move the helicopter. After "clicking start", move around the helicopter with up,down,left and right key on your keyboard for horizontal movement, Q and E for vertical movement. You can only stop the helicopter on a plane. </p>
+<script>
+function setup(){
+    
+    var canvas = document.getElementById('myCanvas');
+    var angle_view1  = 40;
+    var angle_view2  = 100;
+    
+    var start = document.getElementById("start");
+    var stop = document.getElementById("stop");
+    var speed = document.getElementById("slider3");
+    var context = canvas.getContext('2d');
+    var m4 = twgl.m4;
+    var dx = 0;       
+    var dy = 0;
+    var dz = 0;
+    var spin_angle = 0;
+    var flag = 0;
+    var flag2 = 0;
+    var left_angle = 0;
+    var right_angle = 0;
+    
+    
+    function moveToTx(x,y,z,Tx) {
+        var loc = [x,y,z];
+        var locTx = m4.transformPoint(Tx,loc);
+        context.moveTo(locTx[0]+250,-locTx[1]+250);
+    }
+
+    function lineToTx(x,y,z,Tx) {
+        var loc = [x,y,z];
+        var locTx = m4.transformPoint(Tx,loc);
+        context.lineTo(locTx[0]+250,-locTx[1]+250);
+    }
+    
+    
+    function drawArrow(Tx) {
+      
+        moveToTx(0,0,0,Tx);
+     
+        lineToTx(50, 0, 0, Tx);
+      
+        context.stroke(); 
+
+    }
+    
+    function drawSphere(Tx) {
+      
+      var xc=15,yc=15,zc=15;
+      var rx=15,ry=15,rz=15;
+      var theta=0,phi=0;
+
+      for(phi=0;phi<2.001*Math.PI;phi=phi+(1/4)*Math.PI){
+          theta=0;
+          moveToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                   yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          for(theta=(1/32)*Math.PI;theta<1.001*Math.PI;theta=theta+(1/32)*Math.PI)
+                lineToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                       yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          context.stroke();
+      }
+      for(theta=(1/8)*Math.PI;theta<0.999*Math.PI;theta=theta+(1/4)*Math.PI){
+          phi=0;
+          moveToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                   yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          for(phi=(1/64)*Math.PI;phi<2.001*Math.PI;phi=phi+(1/64)*Math.PI)
+              lineToTx(xc+rx*Math.sin(theta)*Math.cos(phi),
+                       yc+ry*Math.cos(theta),zc+rz*Math.sin(theta)*Math.sin(phi),Tx);
+          context.stroke();
+      }
+  }
+    
+    function drawLawn(Tx){
+        moveToTx(-200,-200,0,Tx);
+        lineToTx(-200,200,0,Tx);
+        lineToTx(200,200,0,Tx);
+        lineToTx(200,-200,0,Tx);
+        lineToTx(-200,-200,0,Tx);
+        context.stroke();
+        
+        moveToTx(-50,-200,0,Tx);lineToTx(-50,200,0,Tx);context.stroke();
+        moveToTx(-90,-200,0,Tx);lineToTx(-90,200,0,Tx);context.stroke();
+        moveToTx(-130,-200,0,Tx);lineToTx(-130,200,0,Tx);context.stroke();
+        moveToTx(-170,-200,0,Tx);lineToTx(-170,200,0,Tx);context.stroke();
+        moveToTx(0,-200,0,Tx);lineToTx(0,200,0,Tx);context.stroke();
+        moveToTx(50,-200,0,Tx);lineToTx(50,200,0,Tx);context.stroke();
+        moveToTx(90,-200,0,Tx);lineToTx(90,200,0,Tx);context.stroke();
+        moveToTx(130,-200,0,Tx);lineToTx(130,200,0,Tx);context.stroke();
+        moveToTx(170,-200,0,Tx);lineToTx(170,200,0,Tx);context.stroke();
+    }
+
+    
+    function drawHelicopter(Tx){
+      
+        moveToTx(0, 15,25, Tx);
+        lineToTx(0,-15,25, Tx);
+        lineToTx(0,-15,55, Tx);
+        lineToTx(0, 15,55, Tx);
+        lineToTx(0,15,25,Tx);
+      
+        lineToTx(50,15,25,Tx);
+
+        context.stroke();
+      
+        moveToTx(50, 15,55, Tx);
+        lineToTx(0, 15, 55, Tx);
+        context.stroke();
+      
+        moveToTx(50, -15,55, Tx);
+        lineToTx(0, -15, 55, Tx);
+        context.stroke();
+      
+        moveToTx(50, -15,25, Tx);
+        lineToTx(0, -15, 25, Tx);
+        context.stroke();
+      
+        moveToTx(50,30,70,Tx);
+        lineToTx(50, -30,70, Tx);
+        lineToTx(50, -30, 0,Tx);
+        lineToTx(50, 30, 0,Tx);
+        lineToTx(50,30,70,Tx);
+        context.stroke();
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+        moveToTx(50, -30,70, Tx);
+        lineToTx(120,-30,70,Tx);
+        context.stroke();
+        moveToTx(50, 30, 0,Tx);
+        lineToTx(120,30,0,Tx);
+        context.stroke();
+        moveToTx(50,-30,0,Tx);
+        lineToTx(120,-30,0,Tx);
+        context.stroke();
+      
+        moveToTx(120,30,70,Tx);
+        lineToTx(120, -30,70, Tx);
+        lineToTx(120, -30, 0,Tx);
+        lineToTx(120, 30, 0,Tx);
+        lineToTx(120,30,70,Tx);
+        context.stroke();
+      
+      
+  }
+    function draw2(){
+        draw(spin_angle);
+    }
+    
+    function draw(angle_to_spin){
+       
+        canvas.width = canvas.width;
+        var angle1 = angle_view1*0.01*Math.PI;
+        var angle2 = angle_view2;
+        var total_angle = left_angle - right_angle;
+        var stack = [m4.identity()];
+        var eye = [500 * Math.cos(angle1), 500 * Math.sin(angle1), angle2];
+        var target = [0,0,0];
+        var up = [0,0,1];
+        var Tcamera = m4.inverse(m4.lookAt(eye,target,up));
+        
+        drawLawn(Tcamera);
+        stack.unshift(stack[0]);
+        var shift = m4.translation([dx,dy,dz]);
+        var Tmodel = m4.translation([dx,dy,dz]);
+        
+        stack[0] = m4.multiply(Tmodel,stack[0]);
+    
+        drawHelicopter(m4.multiply(stack[0],Tcamera));
+        
+        var Tsphere_to_body = m4.translation([70,-15,70]);
+        stack[0] = m4.multiply(Tsphere_to_body,stack[0]);
+        
+        drawSphere(m4.multiply(stack[0],Tcamera));
+        var spin = m4.rotationZ(angle_to_spin);
+    
+        stack.unshift(stack[0]);
+        
+        var Tarrow1_to_sphere = m4.multiply(m4.rotationZ(0 + angle_to_spin),m4.translation([15,15,30]));
+
+        stack[0] = m4.multiply(Tarrow1_to_sphere,stack[0]);
+        drawArrow(m4.multiply(stack[0],Tcamera));
+      
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow2_to_sphere = m4.multiply(m4.rotationZ(0.5*Math.PI + angle_to_spin),m4.translation([15,15,30]));
+        stack[0] = m4.multiply(Tarrow2_to_sphere,stack[0]);
+        drawArrow(m4.multiply(stack[0],Tcamera));
+      
+      
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow3_to_sphere = m4.multiply(m4.rotationZ(1*Math.PI+angle_to_spin),m4.translation([15,15,30]));
+        stack[0] = m4.multiply(Tarrow3_to_sphere,stack[0]);
+        drawArrow(m4.multiply(stack[0],Tcamera));
+      
+        stack.shift();
+        stack.unshift(stack[0]);
+        var Tarrow4_to_sphere = m4.multiply(m4.rotationZ(1.5*Math.PI + angle_to_spin),m4.translation([15,15,30]));
+        stack[0] = m4.multiply(Tarrow4_to_sphere,stack[0]);
+        drawArrow(m4.multiply(stack[0],Tcamera));
+        
+    }
+    
+    function startanimation(){
+        
+        flag = 1;
+        if (flag2 == 0){
+            flag2 = 1;
+            animation();
+            
+        } else if (flag2 == 1){
+        }
+    }
+    function animation(){
+        
+        spin_angle += 0.2;
+        draw(spin_angle);
+        if (flag == 1){
+            window.requestAnimationFrame(animation);      
+        }
+    }
+    
+    function stop1(){
+        if (dz == 0){
+            flag = 0;
+            flag2 = 0;
+        }
+        
+    }
+    
+    
+    start.addEventListener("click", startanimation);
+    stop.addEventListener("click", stop1);
+    document.addEventListener("keydown", function(event){
+        if (event.keyCode == 38 && flag == 1){
+            dx += 1;
+        }   
+        
+        if (event.keyCode == 37 && flag == 1){
+            dy += 1;
+        }   
+        
+        if (event.keyCode == 39 && flag == 1){
+            dy   -= 1;
+        }   
+        
+        if (event.keyCode == 40 && flag == 1){
+            dx -= 1;
+        }   
+        
+        if (event.keyCode == 81 && flag == 1){
+            dz += 2;
+        }
+        
+        if (event.keyCode == 69 && flag == 1  && dz > 0){
+            dz -= 2;
+        }
+        
+        if (event.keyCode == 65 ){
+            if (angle_view1 == 100){
+                angle_view1 = -100;
+            }
+            angle_view1 += 1;
+        }
+        
+        if (event.keyCode == 68){
+            if (angle_view1 == -100){
+                angle_view1 = 100;
+            }
+            angle_view1 -= 1;
+        }
+        
+        if (event.keyCode == 83 ){
+            angle_view2 += 10;
+        }
+        
+        if (event.keyCode == 87 ){
+            if (angle_view2 > 0){
+            angle_view2 -= 10;
+            }
+        }
+        draw(spin_angle);
+    })
+    draw(spin_angle);
+    
+}
+    
+window.onload = setup;
+
+    
+</script>
+    
+
+<script src="http://graphics.cs.wisc.edu/JS/twgl-full.min.js"></script>
+</body>
+</html>
