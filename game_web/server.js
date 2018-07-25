@@ -58,7 +58,7 @@ app.use(bodyParser.urlencoded({extended: false}))
 app.use('/lobby', router)
 
 // socket
-var server = app.listen(3000)
+var server = app.listen(process.env.PORT || 3000)
 var io = socket(server)
 io.use(sharedsession(session1))
 io.on('connection', (socket) => {

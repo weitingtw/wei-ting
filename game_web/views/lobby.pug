@@ -17,7 +17,7 @@ html
         input(id='message')
         button(id='send') send
             
-    script(src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js')
+    script(src='/socket.io/socket.io.js')
     script.
         document.getElementById("username").innerText = "#{username}";
         var message = document.getElementById("message");
