@@ -17,15 +17,18 @@ html
         input(id='message')
         button(id='send') send
             
+    div(id= 'users_header') Online Users
+        div(id = 'users_list')
     script(src='/socket.io/socket.io.js')
     script.
         document.getElementById("username").innerText = "#{username}";
         var message = document.getElementById("message");
         var send_button = document.getElementById("send");
         var output = document.getElementById("output");
-        var socket = io();
+        var users_list = document.getElementById("users_list");
+        var socket = io();    
         //var socket = io.connect(location.origin.replace(/^http/, 'ws'))
-        
+        socket.emit('join');
         send_button.addEventListener("click", ()=>{
             if (message.value != ""){
                 socket.emit('chat', {
@@ -39,6 +42,16 @@ html
             output.innerHTML += '<p>' + data.name + ":" + data.message + '</p>';
             output.scrollTop = output.scrollHeight;
         });
+        
+        socket.on('join', (data) => {
+            users_list.innerHTML = data.users_list.join('\n');
+            users_list.scrollTop = users_list.scrollHeight;
+        })
+        
+        socket.on('leave', (data) => {
+            users_list.innerHTML = data.users_list.join('\n');
+            users_list.scrollTop = users_list.scrollHeight;
+        })
         /*document.getElementById("game1button").addEventListener('click', function(){
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
@@ -53,6 +66,9 @@ html
             
         });*/
         
+       window.onbeforeunload = function(){
+            socket.emit("leave");
+       }
         
         
         

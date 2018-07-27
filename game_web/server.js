@@ -60,6 +60,8 @@ app.use('/lobby', router)
 // socket
 var server = app.listen(process.env.PORT || 3000)
 var io = socket(server)
+var users = [];
+
 io.use(sharedsession(session1))
 io.on('connection', (socket) => {
     console.log('made socket connection')
@@ -68,6 +70,21 @@ io.on('connection', (socket) => {
         
         io.sockets.emit('chat', {message: data.message, name: socket.handshake.session.username})
         socket.handshake.session.save();
+    })
+    
+    socket.on('join', () =>{
+        users.push(socket.handshake.session.username);
+        io.sockets.emit('join', {users_list: users})
+    })
+    
+    socket.on('leave', ()=>{
+        for (var i = 0; i < users.length; i++ ){
+            if (users[i] == socket.handshake.session.username){
+                break;
+            }
+        }
+        users.splice(i, 1);
+        io.sockets.emit('join', {users_list: users})
     })
 })
 //
