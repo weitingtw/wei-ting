@@ -7,6 +7,9 @@ var session = require('express-session')
 var mysql = require('mysql')
 var socket = require('socket.io')
 var sharedsession = require("express-socket.io-session")
+var ExpressPeerServer = require('peer').ExpressPeerServer;
+var webRTC = require('webrtc.io').listen(8001);
+
 
 // mysql
 /*var db = mysql.createConnection({
@@ -57,11 +60,24 @@ app.use(session1)
 app.use(bodyParser.urlencoded({extended: false}))
 app.use('/lobby', router)
 
-// socket
+// server and socket setup
 var server = app.listen(process.env.PORT || 3000)
 var io = socket(server)
-var users = [];
 
+// peer server
+/*var options = {
+    debug: true
+}
+var peerExpress = require('express');
+var peerApp = peerExpress();
+var peerServer = require('http').createServer(peerApp);
+peerApp.use('/peerjs', ExpressPeerServer(peerServer, options));
+
+peerServer.listen(9000);
+peerServer.on('connection', function(id) { console.log("peerserver") });*/
+
+// 
+var users = [];
 io.use(sharedsession(session1))
 io.on('connection', (socket) => {
     console.log('made socket connection')

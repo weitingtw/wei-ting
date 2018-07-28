@@ -14,18 +14,26 @@ html
     div(id='chat_header') Public Chat
         div(id='chat_window')
             div(id='output' style="width: 500px; height: 300px; overflow-y: auto;")  
-        input(id='message')
+        input(id='message' autocomplete="off")
         button(id='send') send
             
     div(id= 'users_header') Online Users
         div(id = 'users_list')
+    input(id='user_to_connect' autocomplete="off")
+    button(id='connect') connect
+    audio(id = "audio" src = '')
     script(src='/socket.io/socket.io.js')
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.9/peer.min.js")
     script.
+        
         document.getElementById("username").innerText = "#{username}";
         var message = document.getElementById("message");
         var send_button = document.getElementById("send");
         var output = document.getElementById("output");
         var users_list = document.getElementById("users_list");
+        var user_to_connect = document.getElementById("user_to_connect");
+        var connect_button = document.getElementById("connect");
+        
         var socket = io();    
         //var socket = io.connect(location.origin.replace(/^http/, 'ws'))
         socket.emit('join');
@@ -52,6 +60,14 @@ html
             users_list.innerHTML = data.users_list.join('\n');
             users_list.scrollTop = users_list.scrollHeight;
         })
+        
+        window.onbeforeunload = function(){
+            socket.emit("leave");
+        }
+       
+        
+        
+        
         /*document.getElementById("game1button").addEventListener('click', function(){
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
@@ -66,10 +82,52 @@ html
             
         });*/
         
-       window.onbeforeunload = function(){
-            socket.emit("leave");
-       }
+        var peer = new Peer("#{username}", {host: 'localhost', port: 9000, path: '/'}); 
         
+        peer.on('open', function(id) {
+            console.log('My peer ID is: ' + id);
+        });
+        
+        peer.on('connection', function(conn){
+            console.log(conn);
+        });
+        
+        peer.on('call', function(call) {
+        // Answer the call, providing our mediaStream
+            console.log("hi");
+            navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
+                console.log("hi");
+                call.answer(stream); // Answer the call with an A/V stream.
+                call.on('stream', function(remoteStream) {
+                        document.getElementById("audio").srcObject = remoteStream;
+                    });
+                });
+            //call.answer(audiostream);
+        });
+
+        
+        
+        var conn;
+        var call;
+        connect_button.addEventListener("click", ()=>{
+            conn = peer.connect(user_to_connect.value);
+            console.log(conn);
+            conn.on('open', function(conn){
+                console.log("fuck")
+            });
+            navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
+                
+                call = peer.call(user_to_connect.value, stream);
+                
+                call.on('stream', (stream)=>{
+                    document.getElementById("audio").srcObject = stream;
+                    document.getElementById("audio").play();
+                    console.log('asd');
+                    console.log(document.getElementById("audio").srcObject);
+                });
+            });
+
+        });
         
         
         
