@@ -82,7 +82,7 @@ html
             
         });*/
         
-        var peer = new Peer("#{username}", {host: 'game-web.herokuapp.com', secure:true, port:443, key: 'peerjs', path: '/'}); 
+        var peer = new Peer("#{username}", {host: 'game-web.herokuapp.com', secure:false, port:443, key: 'peerjs', path: '/'}); 
         
         peer.on('open', function(id) {
             console.log('My peer ID is: ' + id);
