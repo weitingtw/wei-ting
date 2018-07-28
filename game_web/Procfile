@@ -1,2 +1,2 @@
 web: node server.js
-peer: node node_modules/peer/bin/peerjs --port 9000 --key peerjs
+peer: node node_modules/peer/bin/peerjs --port 443 --key peerjs
