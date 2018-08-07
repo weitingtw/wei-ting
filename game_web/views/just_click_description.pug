@@ -1,6 +1,6 @@
 html
     head
-    
+        title just click
     body
         p(id = "username") username
         p(style='white-space:pre;') This is the very first game of this website welcome
@@ -9,7 +9,7 @@ html
         p you got 30 secs 
         form(action='/lobby', method='get')
             button.btn-link(type='submit') back to lobby
-        form(action='game1', method='get')
+        form(action='/lobby/just_click', method='get')
             button.btn-link(type='submit') play
     br
     br

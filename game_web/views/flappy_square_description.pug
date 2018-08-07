@@ -1,0 +1,27 @@
+html
+    head
+        title XAXB
+    body
+        p(id = "username") username
+        p(style='white-space:pre;') Welcome to flappy square
+        p(style='white-space:pre;') Game Instruction:
+        p mouse down to fly 
+        p  
+        p Good Luck 
+        form(action='/lobby', method='get')
+            button.btn-link(type='submit') back to lobby
+        form(action='/lobby/flappy_square', method='get')
+            button.btn-link(type='submit') play
+    br
+    br
+    br
+    br
+    br
+    br
+    br
+    p(style='white-space:pre;') LeaderBoard
+    
+    
+    
+    script.
+        document.getElementById("username").innerText = "#{username}";

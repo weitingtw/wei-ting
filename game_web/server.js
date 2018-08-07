@@ -44,6 +44,9 @@ db.connect((err) => {
 })*/
 
 
+// for loading
+app.use(express.static(path.join(__dirname, '/public')));
+
 
            
 var router = express.Router();
@@ -107,7 +110,6 @@ io.on('connection', (socket) => {
 
 
 router.use((req, res, next)=>{
-    //console.log("middle")
     if (req.method == "GET" && !req.session.username){
         res.redirect('/')
     } else {
@@ -116,7 +118,7 @@ router.use((req, res, next)=>{
 })
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname + '/html/home/index.html'))
+    res.sendFile(path.join(__dirname , '/html/home/index.html'))
 })
 
 router.get('/', (req, res) =>{
@@ -127,13 +129,31 @@ router.post('/', (req, res) =>{
     res.render('lobby' , {title : 'Game Lobby', username: req.session.username})
 })
 
-router.get('/game1_description', (req, res) => {
-        res.render('game1_description', {username: req.session.username})  
+router.get('/just_click_description', (req, res) => {
+        res.render('just_click_description', {username: req.session.username})  
 })
 
-router.get('/game1', (req, res) => {
-        res.sendFile(path.join(__dirname +'/html/game1.html')) 
+router.get('/just_click', (req, res) => {
+        res.sendFile(path.join(__dirname ,'/html/just_click.html')) 
 })
+
+router.get('/XAXB_description', (req, res) => {
+        res.render('XAXB_description', {username: req.session.username})  
+})
+
+router.get('/XAXB', (req, res) => {
+        res.sendFile(path.join(__dirname ,'/html/XAXB.html')) 
+})
+
+router.get('/flappy_square_description', (req, res) => {
+        res.render('flappy_square_description', {username: req.session.username})  
+})
+
+router.get('/flappy_square', (req, res) => {
+        res.sendFile(path.join(__dirname ,'/html/flappy_square/flappy_square.html')) 
+})
+
+
 
 
 

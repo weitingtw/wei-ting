@@ -1,0 +1,27 @@
+html
+    head
+        title XAXB
+    body
+        p(id = "username") username
+        p(style='white-space:pre;') This is the second game of this website welcome
+        p(style='white-space:pre;') Game Instruction:
+        p Guess a distinct 4-digit number 
+        p A stands for "correct position, correct number" 
+        p B stands for "wrong position, correct number" 
+        form(action='/lobby', method='get')
+            button.btn-link(type='submit') back to lobby
+        form(action='/lobby/XAXB', method='get')
+            button.btn-link(type='submit') play
+    br
+    br
+    br
+    br
+    br
+    br
+    br
+    p(style='white-space:pre;') LeaderBoard
+    
+    
+    
+    script.
+        document.getElementById("username").innerText = "#{username}";

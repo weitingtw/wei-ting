@@ -1,133 +1,166 @@
 html
+    meta(charset='utf-8')
+    
+    link(rel='stylesheet', href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css', integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO', crossorigin='anonymous')
+    
+    script(src='https://code.jquery.com/jquery-3.3.1.slim.min.js', integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo', crossorigin='anonymous')
+    
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js', integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49', crossorigin='anonymous')
+    
+    script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js', integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy', crossorigin='anonymous')
+    
+    meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+    
     head
-        title= title
+        title Game Lobby
+        
+    nav.navbar.navbar-dark.bg-dark.navbar-expand-sm
+        button.navbar-toggler(type='button', data-toggle='collapse', data-target='#topNav')
+            span.navbar-toggler-icon
+        #topNav.collapse.navbar-collapse
+            ul.navbar-nav
+                li.nav-item
+                    a.nav-link(href='index.html') Home
+                li.nav-item
+                    a.nav-link(href='#') About
+                li.nav-item
+                    a.nav-link(href='#') Services
+                li.nav-item
+                    a.nav-link(href='#') Contact
+                
+    
     body
-        p(id = "page") Welcome to Game Lobby
-        p(id = "username") username
-    |
-    |
-    form(action='/lobby/game1_description', method='get')
-            button.btn-link(type='submit') game1
-            
-    br
-    br
-    div(id='chat_header') Public Chat
-        div(id='chat_window')
-            div(id='output' style="width: 500px; height: 300px; overflow-y: auto;")  
-        input(id='message' autocomplete="off")
-        button(id='send') send
-            
-    div(id= 'users_header') Online Users
-        div(id = 'users_list')
-    input(id='user_to_connect' autocomplete="off")
-    button(id='connect') connect
-    audio(id = "audio" src = '')
-    script(src='/socket.io/socket.io.js')
-    script(src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.9/peer.min.js")
-    script.
+        div.container-fluid
+            div.row
+                div.col-4
+                    p(id = "page") Welcome to Game Lobby
+                    p(id = "username") username
+            div
+                a.btn.btn-success(href='/lobby/just_click_description') just click
+                br
+                a.btn.btn-success(href='/lobby/XAXB_description') XAXB
+                br
+                a.btn.btn-success(href='/lobby/flappy_square_description') XAXB
         
-        document.getElementById("username").innerText = "#{username}";
-        var message = document.getElementById("message");
-        var send_button = document.getElementById("send");
-        var output = document.getElementById("output");
-        var users_list = document.getElementById("users_list");
-        var user_to_connect = document.getElementById("user_to_connect");
-        var connect_button = document.getElementById("connect");
+            div.row
+                div.col-6
+                    div(id='chat_header' class='jumbotron') 
+                        p(class ='text-center') Public Chat
+                            div(id='chat_window')
+                            div(id='output' style="width: 500px; height: 300px; overflow-y: auto;")  
+                        input(id='message' autocomplete="off")
+                        button(id='send') send
+                    
+                div.col-6(id="new_game_card")
+                    div.card
+                        img.card-img-top(src="https://picsum.photos/200/150/?random")
+                        div.card-body 
+                            h4.card-title New Game Launch
+                            a.btn.btn-success Start
+            
+            div(id= 'users_header') Online Users
+                div(id = 'users_list')
+            input(id='user_to_connect' autocomplete="off")
+            button(id='connect') connect
+            audio(id = "audio" src = '')
+            
+        footer.bg-dark.text-light.text-center
+            div.container-fluid.mb-4.p-4
+                span.bg-primary.mx-auto.w-50 Creator Wei-Ting Chen 2018
         
-        var socket = io();    
-        //var socket = io.connect(location.origin.replace(/^http/, 'ws'))
-        socket.emit('join');
-        send_button.addEventListener("click", ()=>{
-            if (message.value != ""){
-                socket.emit('chat', {
-                    message: message.value
-                });
+        
+        script(src='/socket.io/socket.io.js')
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.9/peer.min.js")
+        script.
+            
+            document.getElementById("username").innerText = "#{username}";
+            var message = document.getElementById("message");
+            var send_button = document.getElementById("send");
+            var output = document.getElementById("output");
+            var users_list = document.getElementById("users_list");
+            var user_to_connect = document.getElementById("user_to_connect");
+            var connect_button = document.getElementById("connect");
+        
+            var socket = io();    
+            //var socket = io.connect(location.origin.replace(/^http/, 'ws'))
+            socket.emit('join');
+            send_button.addEventListener("click", ()=>{
+                if (message.value != ""){
+                    socket.emit('chat', {
+                        message: message.value
+                    });
+                }
+                message.value = "";
+            });
+        
+            socket.on('chat', (data) =>{
+                output.innerHTML += '<p>' + '<strong>' + data.name + '</strong>'+ ": " + data.message + '</p>';
+                output.scrollTop = output.scrollHeight;
+            });
+        
+            socket.on('join', (data) => {
+                users_list.innerHTML = data.users_list.join('\n');
+                users_list.scrollTop = users_list.scrollHeight;
+            })
+        
+            socket.on('leave', (data) => {
+                users_list.innerHTML = data.users_list.join('\n');
+                users_list.scrollTop = users_list.scrollHeight;
+            })
+        
+            window.onbeforeunload = function(){
+                socket.emit("leave");
             }
-            message.value = "";
-        });
-        
-        socket.on('chat', (data) =>{
-            output.innerHTML += '<p>' + data.name + ":" + data.message + '</p>';
-            output.scrollTop = output.scrollHeight;
-        });
-        
-        socket.on('join', (data) => {
-            users_list.innerHTML = data.users_list.join('\n');
-            users_list.scrollTop = users_list.scrollHeight;
-        })
-        
-        socket.on('leave', (data) => {
-            users_list.innerHTML = data.users_list.join('\n');
-            users_list.scrollTop = users_list.scrollHeight;
-        })
-        
-        window.onbeforeunload = function(){
-            socket.emit("leave");
-        }
        
         
         
-        
-        /*document.getElementById("game1button").addEventListener('click', function(){
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("page").innerHTML = xhttp.responseText;
-                    //document.getElementById("demo").innerHTML = this.responseText;
-                }
-            };
-            xhttp.open("POST", "/game1_description", true);
-            xhttp.send("hello");
 
-            
-        });*/
+            var peer = new Peer("#{username}", {host: 'game-web-peer.herokuapp.com', secure: true, port:443}); 
         
-        var peer = new Peer("#{username}", {host: 'game-web.herokuapp.com', secure:true, port:443, path: '/'}); 
+            peer.on('open', function(id) {
+                console.log('My peer ID is: ' + id);
+            });
         
-        peer.on('open', function(id) {
-            console.log('My peer ID is: ' + id);
-        });
+            peer.on('connection', function(conn){
+                console.log(conn);
+            });
         
-        peer.on('connection', function(conn){
-            console.log(conn);
-        });
-        
-        peer.on('call', function(call) {
-        // Answer the call, providing our mediaStream
-            
-            navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
+            peer.on('call', function(call) {
+                // Answer the call, providing our mediaStream
                 
-                call.answer(stream); // Answer the call with an A/V stream.
-                call.on('stream', function(remoteStream) {
+                navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
+                    
+                    call.answer(stream); // Answer the call with an A/V stream.
+                    call.on('stream', function(remoteStream) {
+                        console.log("receive");
                         document.getElementById("audio").srcObject = remoteStream;
                     });
                 });
-            //call.answer(audiostream);
-        });
+                //call.answer(audiostream);
+            });
 
         
         
-        var conn;
-        var call;
-        connect_button.addEventListener("click", ()=>{
-            conn = peer.connect(user_to_connect.value);
-            console.log(conn);
-            conn.on('open', function(conn){
-                
-            });
-            navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
-                
-                call = peer.call(user_to_connect.value, stream);
-                
-                call.on('stream', (stream)=>{
-                    document.getElementById("audio").srcObject = stream;
-                    document.getElementById("audio").play();
-                    console.log('asd');
-                    console.log(document.getElementById("audio").srcObject);
+            var conn;
+            var call;
+            connect_button.addEventListener("click", ()=>{
+                conn = peer.connect(user_to_connect.value);
+                console.log(conn);
+                conn.on('open', function(conn){
+                    
                 });
-            });
+                navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
+                    
+                    call = peer.call(user_to_connect.value, stream);
+                
+                    call.on('stream', (stream)=>{
+                        document.getElementById("audio").srcObject = stream;
+                        document.getElementById("audio").play();
+                        console.log(document.getElementById("audio").srcObject);
+                    });
+                });
 
-        });
+            });
         
         
         
