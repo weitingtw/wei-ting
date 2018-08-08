@@ -30,19 +30,21 @@ html
                 
     
     body
-        div.container-fluid
+        div.container-fluid.mt-3
             div.row
                 div.col-4
                     p(id = "page") Welcome to Game Lobby
                     p(id = "username") username
             div
-                a.btn.btn-success(href='/lobby/just_click_description') just click
-                br
-                a.btn.btn-success(href='/lobby/XAXB_description') XAXB
-                br
-                a.btn.btn-success(href='/lobby/flappy_square_description') XAXB
+                a.btn.btn-primary(id="game-menu") All Games
+                span(id ="games")
+                    a.btn.btn-success.mx-2(href='/lobby/just_click_description') just click
+                
+                    a.btn.btn-success.mx-2(href='/lobby/XAXB_description') XAXB
+                
+                    a.btn.btn-success.mx-2(href='/lobby/flappy_square_description') flappy square
         
-            div.row
+            div.row.mt-3
                 div.col-6
                     div(id='chat_header' class='jumbotron') 
                         p(class ='text-center') Public Chat
@@ -61,7 +63,7 @@ html
             div(id= 'users_header') Online Users
                 div(id = 'users_list')
             input(id='user_to_connect' autocomplete="off")
-            button(id='connect') connect
+            button.mb-3(id='connect') Voice Call
             audio(id = "audio" src = '')
             
         footer.bg-dark.text-light.text-center
@@ -80,6 +82,16 @@ html
             var users_list = document.getElementById("users_list");
             var user_to_connect = document.getElementById("user_to_connect");
             var connect_button = document.getElementById("connect");
+        
+            $(document).ready(function () {
+                $("#games").hide();
+                $("#game-menu").click(function(){
+                    $("#games").toggle(1000);
+                })
+            });
+        
+        
+        
         
             var socket = io();    
             //var socket = io.connect(location.origin.replace(/^http/, 'ws'))
@@ -122,7 +134,7 @@ html
             });
         
             peer.on('connection', function(conn){
-                console.log(conn);
+                console.log("connected");
             });
         
             peer.on('call', function(call) {
@@ -134,18 +146,17 @@ html
                     call.on('stream', function(remoteStream) {
                         console.log("receive");
                         document.getElementById("audio").srcObject = remoteStream;
+                        document.getElementById("audio").play();
                     });
                 });
                 //call.answer(audiostream);
             });
-
-        
         
             var conn;
             var call;
             connect_button.addEventListener("click", ()=>{
                 conn = peer.connect(user_to_connect.value);
-                console.log(conn);
+                console.log("connecting");
                 conn.on('open', function(conn){
                     
                 });

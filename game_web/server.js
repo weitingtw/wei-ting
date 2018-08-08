@@ -67,19 +67,7 @@ app.use('/lobby', router)
 var server = app.listen(process.env.PORT || 3000)
 var io = socket(server)
 
-// peer server
-/*var options = {
-    debug: true
-}
-var peerExpress = require('express');
-var peerApp = peerExpress();
-var peerServer = require('http').createServer(peerApp);
-peerApp.use('/peerjs', ExpressPeerServer(peerServer, options));
-
-peerServer.listen(9000);
-peerServer.on('connection', function(id) { console.log("peerserver") });*/
-
-// 
+// chat
 var users = [];
 io.use(sharedsession(session1))
 io.on('connection', (socket) => {
