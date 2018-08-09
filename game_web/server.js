@@ -10,6 +10,8 @@ var sharedsession = require("express-socket.io-session")
 var ExpressPeerServer = require('peer').ExpressPeerServer;
 var webRTC = require('webrtc.io').listen(8001);
 
+const Firestore = require('@google-cloud/firestore');
+
 
 // mysql
 /*var db = mysql.createConnection({
@@ -72,18 +74,15 @@ var users = [];
 io.use(sharedsession(session1))
 io.on('connection', (socket) => {
     console.log('made socket connection')
-    
     socket.on('chat', (data) =>{
         
         io.sockets.emit('chat', {message: data.message, name: socket.handshake.session.username})
         socket.handshake.session.save();
     })
-    
     socket.on('join', () =>{
         users.push(socket.handshake.session.username);
         io.sockets.emit('join', {users_list: users})
     })
-    
     socket.on('leave', ()=>{
         for (var i = 0; i < users.length; i++ ){
             if (users[i] == socket.handshake.session.username){
@@ -109,10 +108,22 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname , '/html/home/index.html'))
 })
 
+app.get('/forum', (req, res) =>{
+    
+    res.sendFile(path.join(__dirname , '/html/forum.html'))
+    
+})
+
+app.post('/forum', (req, res) =>{
+    console.log(req.body);
+    res.sendFile(path.join(__dirname , '/html/forum.html'))
+})
+
 router.get('/', (req, res) =>{
         res.render('lobby' , {title : 'Game Lobby', username: req.session.username})
 })
 router.post('/', (req, res) =>{  
+    
     req.session.username = req.body.username;
     res.render('lobby' , {title : 'Game Lobby', username: req.session.username})
 })
