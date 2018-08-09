@@ -2,15 +2,13 @@ var express = require('express')
 var app = express()
 var path = require('path')
 var bodyParser = require('body-parser')
-var cons = require('consolidate')
 var session = require('express-session')
 var mysql = require('mysql')
 var socket = require('socket.io')
 var sharedsession = require("express-socket.io-session")
-var ExpressPeerServer = require('peer').ExpressPeerServer;
-var webRTC = require('webrtc.io').listen(8001);
 
-const Firestore = require('@google-cloud/firestore');
+
+//const Firestore = require('@google-cloud/firestore');
 
 
 // mysql
