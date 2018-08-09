@@ -32,11 +32,45 @@
                                 <input type="text" name="username" id="username" class="form-control">
                             </div>
                             <div class="form-group">
-                                <input type="submit" name="submit" class="btn btn-md btn-login"  value="Join">
+                                <input type="submit" name="submit" class="btn btn-md btn-login"  value="Join" id="join-btn">
                             </div>
+                            <div>
+                                <input type="submit" name="submit" class="btn btn-md btn-login"  value="GoogleAcc" id="google-join-btn"> 
+                            </div>
+                                
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <style>
+        #google-join-btn{
+            display: inline;
+        }
+    
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/5.3.1/firebase-auth.js"></script>
+    <script>
+        var provider = new firebase.auth.GoogleAuthProvider();
+        $("#google-join-btn").click(function(){
+            firebase.auth().signInWithPopup(provider).then(function (result) {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+                var token = result.credential.accessToken;
+            // The signed-in user info.
+                var user = result.user;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        });
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+	           $("#username").text = user.displayName;
+                $("#join-btn").trigger("click");
+            } else {
+
+            }
+        });
+
+    </script>

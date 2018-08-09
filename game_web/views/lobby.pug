@@ -45,7 +45,7 @@ html
                     a.btn.btn-success.mx-2(href='/lobby/flappy_square_description') flappy square
         
             div.row.mt-3
-                div.col-6
+                div.col-md-6
                     div(id='chat_header' class='jumbotron') 
                         p(class ='text-center') Public Chat
                             div(id='chat_window')
@@ -66,11 +66,33 @@ html
             button.mb-3(id='connect') Voice Call
             audio(id = "audio" src = '')
             
+        button.btn.btn-primary.hidden(type='button', data-toggle='modal', data-target='#callModal' id="call-modal-btn")
+                | voice call
+                
+        #callModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLabel', aria-hidden='true')
+            .modal-dialog(role='document')
+                .modal-content
+                    .modal-header
+                        h5#callModalLabel.modal-title You are not in call with anyone
+                        button.close(type='button', data-dismiss='modal', aria-label='Close')
+                            span(aria-hidden='true') &times;
+                    .modal-footer
+                        button.btn.btn-secondary.hidden(type='button', data-dismiss='modal' id="accept-btn" ) accept
+                        button.btn.btn-primary.hidden(type='button' id="reject-btn") reject
+                        button.btn.btn-primary.hidden(type='button' id="disconnect-btn") disconnect
+
+            
         footer.bg-dark.text-light.text-center
             div.container-fluid.mb-4.p-4
                 span.bg-primary.mx-auto.w-50 Creator Wei-Ting Chen 2018
         
-        
+        style.
+            .hidden {
+                display: none;
+            }
+            
+            
+            
         script(src='/socket.io/socket.io.js')
         script(src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.9/peer.min.js")
         script.
@@ -88,9 +110,10 @@ html
                 $("#game-menu").click(function(){
                     $("#games").toggle(1000);
                 })
+                
             });
         
-        
+            
         
         
             var socket = io();    
@@ -104,6 +127,17 @@ html
                 }
                 message.value = "";
             });
+            $("#message").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    if (message.value != ""){
+                        socket.emit('chat', {
+                            message: message.value
+                        });
+                    }
+                message.value = "";
+                }
+            });
+            
         
             socket.on('chat', (data) =>{
                 output.innerHTML += '<p>' + '<strong>' + data.name + '</strong>'+ ": " + data.message + '</p>';
@@ -133,41 +167,74 @@ html
                 console.log('My peer ID is: ' + id);
             });
         
-            peer.on('connection', function(conn){
-                console.log("connected");
-            });
+            //peer.on('connection', function(conn){
+            //    console.log("connected");
+            //});
         
             peer.on('call', function(call) {
+            
                 // Answer the call, providing our mediaStream
+                
+                $("#disconnect-btn").click(function(){
+                    $("#call-modal-btn").addClass("hidden");
+                    $("#callModalLabel").html("disconnected");
+                    $("#disconnect-btn").addClass("hidden");
+                    call.close();
+                });
                 
                 navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
                     
                     call.answer(stream); // Answer the call with an A/V stream.
                     call.on('stream', function(remoteStream) {
-                        console.log("receive");
+                        
+                        $("#call-modal-btn").removeClass("hidden");
+                        $("#call-modal-btn").trigger("click");
+                        $("#callModalLabel").html("connected with " + call.peer);
+                        $("#disconnect-btn").removeClass("hidden");
                         document.getElementById("audio").srcObject = remoteStream;
                         document.getElementById("audio").play();
                     });
+                    
+                    call.on('close', ()=>{
+                        $("#call-modal-btn").addClass("hidden");
+                        $("#callModalLabel").html("disconnected");
+                        $("#disconnect-btn").addClass("hidden");
+                    });
                 });
-                //call.answer(audiostream);
+                
             });
         
             var conn;
             var call;
             connect_button.addEventListener("click", ()=>{
-                conn = peer.connect(user_to_connect.value);
-                console.log("connecting");
-                conn.on('open', function(conn){
-                    
-                });
+                //conn = peer.connect(user_to_connect.value);
+                //console.log("connecting");
+                //conn.on('open', function(conn){
+                //    
+                //});
                 navigator.mediaDevices.getUserMedia({video: false, audio: true}).then(function(stream) {
-                    
                     call = peer.call(user_to_connect.value, stream);
-                
+                    console.log(call);
+                    $("#call-modal-btn").removeClass("hidden");
+                    $("#call-modal-btn").trigger("click");
+                    $("#callModalLabel").html("calling " + call.peer);
+                    $("#disconnect-btn").click(function(){
+                        $("#call-modal-btn").addClass("hidden");
+                        call.close();
+                    });
+                    
                     call.on('stream', (stream)=>{
+                        $("#callModalLabel").html("connected with " + call.peer);
+                        $("#disconnect-btn").removeClass("hidden");
                         document.getElementById("audio").srcObject = stream;
                         document.getElementById("audio").play();
                         console.log(document.getElementById("audio").srcObject);
+                    });
+                    
+                    call.on('close', ()=>{
+                        $("#call-modal-btn").addClass("hidden");
+                        $("#callModalLabel").html("disconnected");
+                        $("#disconnect-btn").addClass("hidden");
                     });
                 });
 
