@@ -69,6 +69,9 @@
             timestampsInSnapshots: true
         });
         var provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({
+            prompt: "select_account"
+        });
         $("#google-join-btn").click(function(){
             firebase.auth().signInWithPopup(provider).then(function (result) {
                 var token = result.credential.accessToken;

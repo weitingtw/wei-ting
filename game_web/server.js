@@ -8,7 +8,21 @@ var socket = require('socket.io')
 var sharedsession = require("express-socket.io-session")
 
 
-//const Firestore = require('@google-cloud/firestore');
+// database mongoDB
+/*var mongoose = require("mongoose");
+var mongoDB = "mongodb://weiting:game-web1@ds013014.mlab.com:13014/game-web";
+mongoose.connect(mongoDB, {useNewUrlParser: true });
+mongoose.promise = global.Promise;
+var db = mongoose.connection;
+var Schema = mongoose.Schema;
+var post_schema = new Schema({
+    title: String,
+    content: String,
+    comments: String
+});
+
+var post_model = mongoose.model("post_model", post_schema);*/
+
 
 
 // mysql
@@ -108,13 +122,19 @@ app.get('/', (req, res) => {
 
 app.get('/forum', (req, res) =>{
     
-    res.sendFile(path.join(__dirname , '/html/forum.html'))
+    res.render('forum', {username: req.session.username})
     
 })
 
 app.post('/forum', (req, res) =>{
     console.log(req.body);
+    var post_data = new post_model({title: req.body.title, content: req.body.content, comments: ""});
+    post_data.save((err, data)=>{
+        
+    });
     res.sendFile(path.join(__dirname , '/html/forum.html'))
+    
+    
 })
 
 router.get('/', (req, res) =>{

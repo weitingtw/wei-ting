@@ -1,0 +1,142 @@
+doctype html
+head
+  title forum
+  meta(charset='utf-8')
+  link(rel='stylesheet', href='https://bootswatch.com/4/minty/bootstrap.min.css')
+  script(src='https://code.jquery.com/jquery-3.3.1.slim.min.js', integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo', crossorigin='anonymous')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js', integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49', crossorigin='anonymous')
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js', integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy', crossorigin='anonymous')
+  meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+  script(src='https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js')
+  script(src='https://www.gstatic.com/firebasejs/5.3.1/firebase-firestore.js')
+
+
+style.
+  .hidden{
+  display: none;
+  }
+nav.navbar.navbar-dark.bg-dark.navbar-expand-sm
+  button.navbar-toggler(type='button', data-toggle='collapse', data-target='#topNav')
+    span.navbar-toggler-icon
+  #topNav.collapse.navbar-collapse
+    ul.navbar-nav
+      li.nav-item
+        a.nav-link(href='/lobby') Lobby
+      li.nav-item
+        a.nav-link(href='/forum') Forum
+form.container.mt-5
+  .row
+    .col-4
+      legend Submit your Post here
+      .form-group
+        label(for='title') Title
+        input#title-input.form-control(type='text', name='title', placeholder='Title')
+      .form-group
+        label(for='content') Text
+        textarea#content-input.form-control(name='content', rows='10')
+      .form-group
+        input#submit-btn.btn.btn-md.btn-login.bg-primary(name='submit', value='post')
+    .col-1
+    .col-6
+      #post_list.list-group
+        a.list-group-item.list-group-item-action.active(href='#')
+          | All Threads
+button#post-modal-btn.btn.btn-primary.hidden(type='button', data-toggle='modal', data-target='#post-modal')
+  | post-modal
+// Modal
+#post-modal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='exampleModalLongTitle', aria-hidden='true')
+  .modal-dialog(role='document')
+    .modal-content
+      .modal-header
+        h5#post-modal-title.modal-title Modal title
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') &times;
+      #post-modal-content.modal-body
+        | ...
+      .modal-body
+        h5 Comments
+        #modal-comments  .... 
+        textarea#modal-text(rows='2', cols='40')
+        br
+        button#modal-send-btn submit
+        .modal-footer
+        button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+footer.bg-dark.text-light.text-center
+  .container-fluid.mb-4.p-4
+    span.bg-primary.mx-auto.w-50 Wei-Ting Chen 2018
+    br
+    span.mx-auto.w-50 frameworks/tools/services used: nodejs bootstrap/jquery peerjs firebase
+
+
+script.
+    $(document).ready(function () {
+    var config = {
+        apiKey: "AIzaSyDggRcSHcSddhlAQ06iyV8-saaORoUvcrc",
+        authDomain: "js301-wt.firebaseapp.com",
+        databaseURL: "https://js301-wt.firebaseio.com",
+        projectId: "js301-wt",
+        storageBucket: "js301-wt.appspot.com",
+        messagingSenderId: "631988060957"
+    };
+    firebase.initializeApp(config);
+    const db = firebase.firestore();
+
+    db.settings({
+        timestampsInSnapshots: true
+    });
+    
+    $("#submit-btn").click(function(){
+        var data = {
+            title: $("#title-input").val(),
+            content: $("#content-input").val(),
+            comments: "",
+            time: new Date().getTime()
+        };
+        
+        db.collection("forum").add(data)
+            .then(function(doc){
+            alert("Post has been submitted");
+            console.log(doc.id);
+        });
+        $("#title-input").val("");
+        $("#content-input").val("");
+                                          
+    });
+    
+    db.collection("forum").orderBy("time", "desc").get()
+        .then(function(docs){
+            var template = "";
+            docs.forEach(function (doc){
+                var data = doc.data();
+                template += `<a class='list-group-item list-group-item-action thread' thread-id = ${doc.id}> ${data.title} </a>`;
+            })
+        
+            $("#post_list").append(template);
+    });
+    var threadId;
+    $("#post_list").on("click", ".thread", function(){
+        threadId = $(this).attr("thread-id");
+        db.collection("forum").doc(threadId).get()
+            .then(function(doc){
+                console.log(doc.data());
+                var data = doc.data();
+                $("#post-modal-title").html(data.title);
+                $("#post-modal-content").html(data.content);
+                $("#modal-comments").html(data.comments);
+                $("#post-modal-btn").trigger("click");
+            });
+    });
+    
+    $("#modal-send-btn").click(function(){
+        
+        
+        var updated_comments = $("#modal-comments").html() + "<br>" + "#{username}" +": " +$("#modal-text").val();
+        console.log(updated_comments);
+        db.collection("forum").doc(threadId).update({
+            comments: updated_comments
+        });
+        $("#modal-text").val("");
+    });
+    });
+    
+    

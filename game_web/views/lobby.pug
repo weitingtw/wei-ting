@@ -46,7 +46,8 @@ html
                         p(class ='text-center') Public Chat
                             div(id='chat_window')
                             div(id='output' style="width: 500px; height: 300px; overflow-y: auto;")  
-                        input(id='message' autocomplete="off")
+                        textarea(id="message" rows="1" cols="50")
+                        
                         button(id='send') send
                     
                 div.col-6(id="new_game_card")
@@ -87,6 +88,9 @@ html
         style.
             .hidden {
                 display: none;
+            }
+            #message {
+                display: flex;
             }
             
             
