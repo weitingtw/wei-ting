@@ -19,10 +19,36 @@ html
     br
     br
     p(style='white-space:pre;') LeaderBoard
+    p(id="leader")
+    
+    script(src='https://www.gstatic.com/firebasejs/5.3.1/firebase-app.js')
+    script(src='https://www.gstatic.com/firebasejs/5.3.1/firebase-firestore.js')
     
     
     
     script.
         document.getElementById("username").innerText = "#{username}";
+        var leader_text = document.getElementById("leader");
+        var config = {
+            apiKey: "AIzaSyDggRcSHcSddhlAQ06iyV8-saaORoUvcrc",
+            authDomain: "js301-wt.firebaseapp.com",
+            databaseURL: "https://js301-wt.firebaseio.com",
+            projectId: "js301-wt",
+            storageBucket: "js301-wt.appspot.com",
+            messagingSenderId: "631988060957"
+        };
+        firebase.initializeApp(config);
+        const db = firebase.firestore();
+
+        db.settings({
+            timestampsInSnapshots: true
+        });
         
+        var leaderboard = db.collection("game1").orderBy("score", "desc").limit(3).get()
+        .then(function(docs){
+            docs.forEach(function (doc){
+                var data = doc.data();
+                leader_text.innerText += data.username + "  " + data.score + "\n";
+            });
+        });
     
