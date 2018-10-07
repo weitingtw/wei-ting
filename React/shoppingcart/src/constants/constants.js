@@ -1,0 +1,9 @@
+const ADD_TO_CART = "ADD_TO_CART";
+const DELETE_FROM_CART = "DELETE_FROM_CART";
+const ADD_ITEM = "ADD_ITEM";
+
+module.exports = {
+    ADD_ITEM,
+  ADD_TO_CART,
+  DELETE_FROM_CART
+};
